@@ -3,6 +3,7 @@ package com.note.back.service;
 import com.note.back.dto.BoardDto;
 import com.note.back.dto.BoardSearchDto;
 import com.note.back.entity.Board;
+import com.note.back.exception.NotFoundBoardOfMemberException;
 import com.note.back.repository.BoardQueryRepository;
 import com.note.back.repository.BoardRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -70,13 +71,39 @@ public class BoardService {
     }
 
     /**
-     * 게시글 수정
+     * 게시글 수정 폼(해당 회원의 게시글 데이터 불러오기)
+     */
+    @Transactional(readOnly = true)
+    public Optional<BoardDto> getBoardUpdateForm(Long boardId, Long MemberId) {
+        Optional<Board> board = boardQueryRepository.findByBoardIdAndMemberId(boardId, MemberId);
+        return board.map(b -> BoardDto.builder()
+                .title(b.getTitle())
+                .content(b.getContent())
+                .viewCount(b.getViewCount())
+                .member(b.getMember()).build());
+    }
+
+    /**
+     * 게시글 수정(미구현 - 멤버 엔티티 데이타 필요)
      */
     @Transactional
     public Long updateActionBoard(BoardDto boardDto, Long memberId) {
 
-
         return null;
+    }
+
+    /**
+     * 게시글 삭제
+     */
+    @Transactional
+    public Long deleteActionBoard(Long boardId, Long memberId) {
+        Optional<Board> findBoard = boardQueryRepository.findByBoardIdAndMemberId(boardId, memberId);
+        if (findBoard.isEmpty()) {
+            throw new NotFoundBoardOfMemberException("해당 게시글이 존재하지 않습니다.");
+        }
+
+        boardRepository.delete(findBoard.get());
+        return findBoard.orElseThrow().getId();
     }
 
     /**
@@ -93,13 +120,7 @@ public class BoardService {
     }
 
 
-    @Transactional(readOnly = true)
-    public Optional<BoardDto> getBoardUpdateForm(Long boardId, Long MemberId) {
-        Optional<Board> board = boardQueryRepository.findByBoardIdAndMemberId(boardId, MemberId);
-        return board.map(b -> BoardDto.builder()
-                .title(b.getTitle())
-                .content(b.getContent())
-                .viewCount(b.getViewCount())
-                .member(b.getMember()).build());
-    }
+
+
+
 }

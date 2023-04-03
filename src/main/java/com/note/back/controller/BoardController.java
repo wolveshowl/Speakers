@@ -2,6 +2,8 @@ package com.note.back.controller;
 
 import com.note.back.dto.BoardDto;
 import com.note.back.entity.Board;
+import com.note.back.entity.Member;
+import com.note.back.entity.Role;
 import com.note.back.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,8 +13,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
 import java.util.Optional;
 
 @RestController
@@ -22,6 +27,7 @@ import java.util.Optional;
 public class BoardController {
 
     private final BoardService boardService;
+    private final EntityManager em;
 
     @GetMapping("/list")
     public Page<BoardDto> index(@PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {

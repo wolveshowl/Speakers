@@ -1,26 +1,42 @@
 package com.note.back.repository;
 
+import antlr.StringUtils;
 import com.note.back.dto.BoardSearchDto;
 import com.note.back.entity.Board;
+import com.note.back.entity.QBoard;
+import com.note.back.entity.QMember;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 
+import static com.note.back.entity.QBoard.board;
+import static com.note.back.entity.QMember.member;
+
 @Repository
-@RequiredArgsConstructor
 public class BoardQueryRepositoryImpl implements BoardQueryRepository{
 
-    private final EntityManager em;
+    @PersistenceContext
+    private EntityManager em;
+    private final JPAQueryFactory query;
+
+    public BoardQueryRepositoryImpl(EntityManager em) {
+        this.query = new JPAQueryFactory(em);
+    }
 
     @Override
     public List<Board> searchBoardList(BoardSearchDto boardDto) {
-        return em.createQuery("select b from Board b join fetch b.member m where m.nickname like :nickname or b.title like :title", Board.class)
-                .setParameter("nickname", boardDto.getWriter())
-                .setParameter("title", boardDto.getTitle())
-                .getResultList();
+        return query
+                .select(board)
+                .from(board)
+                .where(eqTitle(boardDto.getTitle()), eqWriter(boardDto.getWriter()))
+                .fetch();
     }
 
     @Override
@@ -31,4 +47,21 @@ public class BoardQueryRepositoryImpl implements BoardQueryRepository{
                 .getResultList();
         return result.stream().findAny();
     }
+
+    private BooleanExpression eqTitle(String title) {
+        if (title.isBlank()) {
+            return null;
+        }
+        return board.title.eq(title);
+    }
+
+    private BooleanExpression eqWriter(String writer) {
+        if (writer.isBlank()) {
+            return null;
+        }
+        return board.title.eq(writer);
+    }
+
+
+
 }
