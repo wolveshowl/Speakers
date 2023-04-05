@@ -119,6 +119,14 @@ public class BoardService {
                 .member(board.getMember()).build()).collect(Collectors.toList());
     }
 
+    @Transactional
+    public String modelTest() {
+
+        return null;
+    }
+
+
+
 
 
 

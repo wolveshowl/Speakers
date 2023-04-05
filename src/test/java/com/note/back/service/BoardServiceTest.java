@@ -124,4 +124,14 @@ class BoardServiceTest {
 
     }
 
+    @Test
+    @DisplayName("")
+    void controlTest() {
+        //given
+
+        //when
+
+        //then
+    }
+
 }
